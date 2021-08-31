@@ -46,6 +46,18 @@ namespace lanms {
 				memset(data, 0, sizeof(data));
 			}
 
+			void refresh() {
+				score = 0;
+				nr_polys = 0;
+				data[0] = 0;
+				data[1] = 0;
+				data[2] = 0;
+				data[3] = 0;
+				data[4] = 0;
+				data[5] = 0;
+				data[6] = 0;
+				data[7] = 0;
+			}
 			/**
 			 * Add a new polygon to be merged.
 			 */
@@ -154,7 +166,7 @@ namespace lanms {
 				poly[3].Y = data[7] * score_inv;
 
 				assert(score > 0);
-				p.score = score;
+				p.score = score/nr_polys; // use the averaged score of multiple merged boxes as the final confidence score
 
 				return p;
 			}
@@ -202,6 +214,7 @@ namespace lanms {
 
 			// first pass
 			std::vector<Polygon> polys;
+			PolyMerger merger;
 			for (size_t i = 0; i < n; i ++) {
 				auto p = data + i * 9;
 				Polygon poly{
@@ -216,19 +229,24 @@ namespace lanms {
 
 				if (polys.size()) {
 					// merge with the last one
-					auto &bpoly = polys.back();
+					auto &bpoly = polys.back();		
 					if (should_merge(poly, bpoly, iou_threshold)) {
-						PolyMerger merger;
-						merger.add(bpoly);
+						// merger.add(bpoly);
 						merger.add(poly);
-						bpoly = merger.get();
+						// bpoly = merger.get();		
 					} else {
+						bpoly = merger.get();
 						polys.emplace_back(poly);
+						merger.refresh();
+						merger.add(poly);
 					}
 				} else {
 					polys.emplace_back(poly);
+					merger.add(poly);
 				}
 			}
+			auto &bpoly = polys.back();
+			bpoly = merger.get();
 			return standard_nms(polys, iou_threshold);
 		}
 }

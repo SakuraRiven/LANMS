@@ -4,6 +4,8 @@ This repo is from https://github.com/Parquery/lanms, which has provided a python
 
 In this repo, we fixed the bug so that anyone could compile the correct .whl for installation.
 
+**Update 07-2021** (@doem97) Use averaged confidence for merged bounding boxes, while in original paper the confidence score is an accumulated score. (Later one causes problem that more bbox or longer text would have higher confidence)
+
 ## Installation
 
 ```
